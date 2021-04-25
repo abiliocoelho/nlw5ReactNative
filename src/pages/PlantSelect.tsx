@@ -6,6 +6,7 @@ import {
   FlatList,
   ActivityIndicator,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { Header } from "../components/Header";
 import { EnviromentButton } from "../components/EnviromentButton";
 import { PlantCardPrimary } from "../components/PlantCardPrimary";
@@ -13,26 +14,15 @@ import { api } from "../services/api";
 import { Load } from "../components/Load";
 import colors from "../styles/colors";
 import fonts from "../styles/fonts";
+import { PlantProps } from "../libs/Storage";
 
 interface EnviromentProps {
   key: string;
   title: string;
 }
 
-interface PlantProps {
-  id: string;
-  name: string;
-  about: string;
-  water_tips: string;
-  photo: string;
-  environments: [string];
-  frequency: {
-    times: number;
-    repeat_every: string;
-  };
-}
-
 export function PlantSelect() {
+  const navigation = useNavigation();
   const [enviroments, setEnviroments] = useState<EnviromentProps[]>([]);
   const [plants, setPlants] = useState<PlantProps[]>([]);
   const [filteredPlants, setFilteredPlants] = useState<PlantProps[]>([]);
@@ -41,7 +31,6 @@ export function PlantSelect() {
 
   const [page, setPage] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
-  // const [loadedAll, setLoadedAll] = useState(false);
 
   function handleEnviromentSelected(enviroment: string) {
     setEnviromentSelected(enviroment);
@@ -78,6 +67,10 @@ export function PlantSelect() {
     setLoadingMore(true);
     setPage((oldValue) => oldValue + 1);
     fetchPlants();
+  }
+
+  function handlePlantSelect(plant: PlantProps) {
+    navigation.navigate("PlantSave", { plant });
   }
 
   useEffect(() => {
@@ -121,7 +114,12 @@ export function PlantSelect() {
         <FlatList
           data={filteredPlants}
           keyExtractor={(item) => String(item.id)}
-          renderItem={({ item }) => <PlantCardPrimary data={item} />}
+          renderItem={({ item }) => (
+            <PlantCardPrimary
+              data={item}
+              onPress={() => handlePlantSelect(item)}
+            />
+          )}
           numColumns={2}
           onEndReachedThreshold={0.1}
           onEndReached={({ distanceFromEnd }) =>
